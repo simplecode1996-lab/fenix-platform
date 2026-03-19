@@ -1,11 +1,13 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Mail, Lock, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 
 export default function Login() {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +24,7 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || t('errorOccurred'));
     } finally {
       setLoading(false);
     }
@@ -31,16 +33,16 @@ export default function Login() {
   const handleForgotPassword = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) {
-      setError('Please enter your email address');
+      setError(t('emailRequired'));
       return;
     }
     setError(''); setForgotMessage('');
     try {
       const res = await api.post('/password/forgot', { email });
-      setForgotMessage(res.data.note || 'Please contact an administrator to reset your password');
+      setForgotMessage(res.data.note || t('requestReset'));
       setShowForgot(false);
     } catch (err: any) {
-      setError('Error requesting password reset');
+      setError(t('errorOccurred'));
     }
   };
 
@@ -58,7 +60,7 @@ export default function Login() {
           <img src="/Logo Fenix-04.png" alt="Fenix Logo" style={styles.logoIcon} />
           <h1 style={styles.title}>FENIX PLATFORM</h1>
           <p style={styles.subtitle}>
-            {showForgot ? 'Reset Your Password' : 'Welcome Back'}
+            {showForgot ? t('resetPassword') : t('welcomeBack')}
           </p>
         </div>
 
@@ -67,14 +69,14 @@ export default function Login() {
             <div style={styles.inputGroup}>
               <label style={styles.label}>
                 <Mail size={16} />
-                Email Address
+                {t('email')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 style={styles.input}
-                placeholder="your@email.com"
+                placeholder="tu@email.com"
                 required
               />
             </div>
@@ -82,7 +84,7 @@ export default function Login() {
             <div style={styles.inputGroup}>
               <label style={styles.label}>
                 <Lock size={16} />
-                Password
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -113,7 +115,7 @@ export default function Login() {
                 <span className="loading"></span>
               ) : (
                 <>
-                  Sign In
+                  {t('login')}
                   <ArrowRight size={18} />
                 </>
               )}
@@ -124,7 +126,7 @@ export default function Login() {
               onClick={() => setShowForgot(true)} 
               style={styles.forgotBtn}
             >
-              Forgot your password?
+              {t('forgotPassword')}
             </button>
           </form>
         ) : (
@@ -132,21 +134,21 @@ export default function Login() {
             <div style={styles.inputGroup}>
               <label style={styles.label}>
                 <Mail size={16} />
-                Email Address
+                {t('email')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 style={styles.input}
-                placeholder="your@email.com"
+                placeholder="tu@email.com"
                 required
               />
             </div>
 
             <div style={styles.infoBox}>
               <AlertCircle size={18} />
-              <p>Enter your email address. An administrator will reset your password and contact you.</p>
+              <p>{t('requestReset')}</p>
             </div>
 
             {error && (
@@ -157,7 +159,7 @@ export default function Login() {
             )}
 
             <button type="submit" style={styles.submitBtn} className="btn-primary">
-              Request Password Reset
+              {t('requestReset')}
               <ArrowRight size={18} />
             </button>
 
@@ -166,7 +168,7 @@ export default function Login() {
               onClick={() => setShowForgot(false)} 
               style={styles.forgotBtn}
             >
-              ← Back to login
+              {t('backToLogin')}
             </button>
           </form>
         )}
@@ -174,7 +176,7 @@ export default function Login() {
         {/* Footer */}
         <div style={styles.footer}>
           <div style={styles.footerDot}></div>
-          <span>Secure Login</span>
+          <span>{t('secureLogin')}</span>
           <div style={styles.footerDot}></div>
         </div>
       </div>
