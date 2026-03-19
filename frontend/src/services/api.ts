@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || 'https://fenix-backend-g6pv.onrender.com'
+  baseURL: import.meta.env.VITE_API_URL || 'https://fenix-backend-g6pv.onrender.com/api'
 });
 
 // Attach JWT token to every request
