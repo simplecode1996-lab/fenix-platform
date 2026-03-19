@@ -35,4 +35,12 @@ pool.on('error', (err: Error) => {
   process.exit(-1);
 });
 
+// Log connection config (without password)
+console.log('Database configuration:', {
+  usingConnectionString: !!process.env.DATABASE_URL,
+  host: process.env.DATABASE_URL ? 'from DATABASE_URL' : (process.env.DB_HOST || 'localhost'),
+  port: process.env.DATABASE_URL ? 'from DATABASE_URL' : (process.env.DB_PORT || '5433'),
+  database: process.env.DATABASE_URL ? 'from DATABASE_URL' : (process.env.DB_NAME || 'fenix_platform')
+});
+
 export default pool;
