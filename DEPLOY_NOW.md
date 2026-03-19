@@ -1,127 +1,100 @@
-# Deploy NOW - Quick Reference
+# DEPLOY NOW - Current Status & Fix
 
-## 🚀 Fastest Path to Production
+## � CURRENT ISSUE
+Backend is trying to connect to localhost instead of Supabase database.
 
-### Step 1: Push to GitHub (5 min)
+## ✅ WHAT'S WORKING
+- Database: Supabase deployed at `db.bhtosjlllltsimoyabis.supabase.co`
+- Frontend: Netlify deployed at `https://fenix-initial.netlify.app`
+- Backend: Render service at `https://fenix-backend-g6pv.onrender.com`
+
+## 🔧 FIX REQUIRED - Set Environment Variable in Render
+
+### Go to Render Dashboard NOW:
+1. Open: https://dashboard.render.com
+2. Click on service: `fenix-backend-g6pv`
+3. Go to "Environment" tab
+4. Add this variable:
+
+```
+DATABASE_URL=postgresql://postgres:fenix123%23%40%21%40@db.bhtosjlllltsimoyabis.supabase.co:5432/postgres
+```
+
+5. Click "Save Changes"
+6. Render will auto-redeploy (takes 2-3 minutes)
+
+### Other Required Environment Variables (should already be set):
+```
+JWT_SECRET=fenix-super-secret-key-2024
+NODE_ENV=production
+```
+
+## 📝 Connection Details
+
+### Supabase Database
+- Host: `db.bhtosjlllltsimoyabis.supabase.co`
+- Port: `5432`
+- Database: `postgres`
+- User: `postgres`
+- Password: `fenix123#@!@`
+- URL-encoded password: `fenix123%23%40%21%40`
+
+### Backend (Render)
+- URL: https://fenix-backend-g6pv.onrender.com
+- Health check: https://fenix-backend-g6pv.onrender.com/health
+- Repository: https://github.com/simplecode1996-lab/fenix-platform
+
+### Frontend (Netlify)
+- URL: https://fenix-initial.netlify.app
+- API configured to: https://fenix-backend-g6pv.onrender.com
+
+## 🧪 Test After Fix
+
+### 1. Test Backend Health
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/fenix-platform.git
-git push -u origin main
+curl https://fenix-backend-g6pv.onrender.com/health
 ```
+Should return: `{"status":"ok","message":"Fenix Platform API is running"}`
 
-### Step 2: Render - Database (3 min)
-1. Go to https://render.com → Sign up
-2. New + → PostgreSQL → Free plan
-3. Name: `fenix-db` → Create
-4. Copy "Internal Database URL"
-
-### Step 3: Render - Initialize DB (2 min)
-Click database → Connect → External Connection → Copy psql command:
+### 2. Test Login API
 ```bash
-psql "EXTERNAL_URL" -f backend/database/schema.sql
-psql "EXTERNAL_URL" -f backend/database/add_system_settings.sql
-psql "EXTERNAL_URL" -f backend/database/demo_data.sql
+curl -X POST https://fenix-backend-g6pv.onrender.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@fenix.com","password":"admin123"}'
 ```
+Should return JWT token
 
-### Step 4: Render - Backend (5 min)
-1. New + → Web Service → Connect GitHub repo
-2. Settings:
-   - Root: `backend`
-   - Build: `npm install && npm run build`
-   - Start: `npm start`
-3. Environment → Add from Database → Select fenix-db
-4. Add variables:
-   ```
-   NODE_ENV=production
-   JWT_SECRET=fenix_secret_2024
-   JWT_EXPIRES_IN=24h
-   ```
-5. Copy service URL: `https://fenix-backend.onrender.com`
+### 3. Test Frontend
+Open: https://fenix-initial.netlify.app
+Login: admin@fenix.com / admin123
 
-### Step 5: Netlify - Frontend (5 min)
-1. Go to https://netlify.com → Sign up
-2. Add site → Import from GitHub
-3. Settings:
-   - Base: `frontend`
-   - Build: `npm run build`
-   - Publish: `frontend/dist`
-4. Environment variables:
-   ```
-   VITE_API_URL=https://fenix-backend.onrender.com
-   ```
-5. Deploy → Copy URL
+## 📊 What Changed
 
-### Step 6: Update CORS (1 min)
-Render → Backend → Environment:
-```
-FRONTEND_URL=https://your-site.netlify.app
-```
+Fixed `backend/src/config/database.ts` to support DATABASE_URL:
+- Now checks for DATABASE_URL first (production)
+- Falls back to individual env vars (local development)
+- Added SSL support for Supabase connection
 
-### Step 7: Test (2 min)
-Open Netlify URL → Login: admin@fenix.com / admin123
+## ⚠️ Known Issues
+
+### Render Free Tier
+- Service sleeps after 15 minutes of inactivity
+- Takes 50+ seconds to wake up on first request
+- Solution: Upgrade to paid tier or use UptimeRobot
+
+### CORS Already Fixed
+Backend allows: `https://fenix-initial.netlify.app`
+
+## 🎯 Next Steps After Fix
+
+1. Wait for Render to finish deploying (2-3 min)
+2. Test health endpoint
+3. Test login from frontend
+4. Share URL with client: https://fenix-initial.netlify.app
 
 ---
 
-## ✅ Done! Share with Client
-
-**URL**: https://your-site.netlify.app
-
-**Credentials**:
+**Login Credentials:**
 - Admin: admin@fenix.com / admin123
-- Demo: demo1@fenix.com / demo123
-
----
-
-## 🔄 Update Later
-```bash
-git add .
-git commit -m "Update"
-git push
-```
-Both Render and Netlify auto-deploy!
-
----
-
-## 📱 What to Show Client
-
-1. **Dashboard** - Account progression
-2. **Create User** - Admin functionality
-3. **Accounts** - View all accounts
-4. **Payments** - Request and manage
-5. **Language** - EN/ES switch
-6. **Mobile** - Responsive design
-
----
-
-## 💡 Pro Tips
-
-- Change admin password after first login
-- Create 2-3 demo users for client
-- Test on mobile before sharing
-- Monitor Render logs first 24 hours
-- Database free for 90 days
-
----
-
-## 🆘 Quick Fixes
-
-**Build fails?**
-→ Check Render logs
-
-**Can't connect?**
-→ Check VITE_API_URL and FRONTEND_URL
-
-**CORS error?**
-→ URLs must match exactly (no trailing /)
-
-**Database error?**
-→ Check DATABASE_URL in Render
-
----
-
-**Total Time: 23 minutes**
-**Cost: $0 (free for 90 days)**
-
-🎉 **You're live!**
+- Demo User 1: demo1@fenix.com / demo123
+- Demo User 2: demo2@fenix.com / demo123
