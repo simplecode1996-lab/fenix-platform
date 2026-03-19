@@ -84,11 +84,15 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       const level3At = n * 9;
       const completeAt = n * 27;
 
+      const level2Missing = level2At - globalMax;
+      const level3Missing = level3At - globalMax;
+      const completeMissing = completeAt - globalMax;
+
       return {
         ...acc,
-        level2_status: acc.level_2_date ? 'completed' : Math.max(0, level2At - globalMax),
-        level3_status: acc.level_3_date ? 'completed' : Math.max(0, level3At - globalMax),
-        complete_status: completeAt <= globalMax ? 'completed' : Math.max(0, completeAt - globalMax),
+        level2_status: acc.level_2_date ? 'completed' : (level2Missing <= 0 ? 'completed' : level2Missing),
+        level3_status: acc.level_3_date ? 'completed' : (level3Missing <= 0 ? 'completed' : level3Missing),
+        complete_status: completeMissing <= 0 ? 'completed' : completeMissing,
         level2_at: level2At,
         level3_at: level3At,
         complete_at: completeAt
