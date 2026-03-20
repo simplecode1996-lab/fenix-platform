@@ -19,12 +19,15 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setForgotMessage('');
     setLoading(true);
     try {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || t('errorOccurred'));
+      const errorMessage = err.response?.data?.error || t('errorOccurred');
+      setError(errorMessage);
+      console.error('Login error:', errorMessage);
     } finally {
       setLoading(false);
     }
