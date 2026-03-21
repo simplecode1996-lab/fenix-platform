@@ -57,15 +57,15 @@ export default function Dashboard() {
   };
 
   const renderStatus = (status: number | 'completed') => {
-    if (status === 'completed') return <span style={{ color: '#10b981', fontSize: '1.5rem' }}>●</span>;
-    return <span className="badge badge-neutral">{t('missing')} {status.toLocaleString()}</span>;
+    if (status === 'completed') return <span style={{ color: '#22c55e', fontSize: '1.2rem' }}>●</span>;
+    return <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{t('missing')} {status.toLocaleString()}</span>;
   };
 
   if (loading) return <div style={{ color: '#94a3b8', textAlign: 'center', padding: '3rem' }}>{t('loading')}</div>;
   if (!data) return null;
 
   return (
-    <div style={styles.container}>
+    <div>
       <h2 style={styles.title}>{t('dashboard')}</h2>
 
       {/* Admin filter */}
@@ -73,126 +73,80 @@ export default function Dashboard() {
         <form onSubmit={handleFilter} style={styles.filterRow}>
           <input
             type="text"
-            placeholder="Filtrar por código de usuario..."
+            placeholder="Filter by user code..."
             value={filterCode}
             onChange={e => setFilterCode(e.target.value)}
             style={styles.input}
           />
-          <button type="submit" className="btn btn-primary">{t('search')}</button>
-          <button type="button" className="btn btn-secondary" onClick={() => { setFilterCode(''); fetchDashboard(); }}>{t('clear')}</button>
+          <button type="submit" style={styles.btn}>{t('search')}</button>
+          <button type="button" style={styles.btnSecondary} onClick={() => { setFilterCode(''); fetchDashboard(); }}>{t('clear')}</button>
         </form>
       )}
 
       {/* User info */}
       {data.user_info && (
-        <div className="card" style={styles.infoCard}>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>{t('code')}:</span>
-            <span style={styles.infoValue}>#{data.user_info.user_code}</span>
-          </div>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>{t('email')}:</span>
-            <span style={styles.infoValue}>{data.user_info.email}</span>
-          </div>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>{t('name')}:</span>
-            <span style={styles.infoValue}>{data.user_info.first_name} {data.user_info.last_name}</span>
-          </div>
+        <div style={styles.infoCard}>
+          <span><strong>{t('code')}:</strong> {data.user_info.user_code}</span>
+          <span><strong>{t('email')}:</strong> {data.user_info.email}</span>
+          <span><strong>{t('name')}:</strong> {data.user_info.first_name} {data.user_info.last_name}</span>
         </div>
       )}
 
-      {/* Max levels - Stats Grid */}
-      <div style={styles.statsGrid}>
-        <div className="stat-card slide-in">
-          <div style={styles.statIcon}>📊</div>
-          <div className="stat-label">{t('maxLevel1')}</div>
-          <div className="stat-value" style={{ color: '#3b82f6' }}>{data.max_levels.max_level1 || 0}</div>
-        </div>
-        <div className="stat-card slide-in" style={{ animationDelay: '0.1s' }}>
-          <div style={styles.statIcon}>📈</div>
-          <div className="stat-label">{t('maxLevel2')}</div>
-          <div className="stat-value" style={{ color: '#8b5cf6' }}>{data.max_levels.max_level2 || 0}</div>
-        </div>
-        <div className="stat-card slide-in" style={{ animationDelay: '0.2s' }}>
-          <div style={styles.statIcon}>🎯</div>
-          <div className="stat-label">{t('maxLevel3')}</div>
-          <div className="stat-value" style={{ color: '#f59e0b' }}>{data.max_levels.max_level3 || 0}</div>
-        </div>
-        <div className="stat-card slide-in" style={{ animationDelay: '0.3s' }}>
-          <div style={styles.statIcon}>✨</div>
-          <div className="stat-label">{t('globalMax')}</div>
-          <div className="stat-value" style={{ color: '#10b981' }}>{data.global_max}</div>
-        </div>
+      {/* Max levels */}
+      <div style={styles.levelsRow}>
+        <div style={styles.levelCard}><div style={styles.levelLabel}>{t('maxLevel1')}</div><div style={styles.levelValue}>{data.max_levels.max_level1 || 0}</div></div>
+        <div style={styles.levelCard}><div style={styles.levelLabel}>{t('maxLevel2')}</div><div style={styles.levelValue}>{data.max_levels.max_level2 || 0}</div></div>
+        <div style={styles.levelCard}><div style={styles.levelLabel}>{t('maxLevel3')}</div><div style={styles.levelValue}>{data.max_levels.max_level3 || 0}</div></div>
+        <div style={styles.levelCard}><div style={styles.levelLabel}>{t('globalMax')}</div><div style={styles.levelValue}>{data.global_max}</div></div>
       </div>
 
       {/* Accounts table */}
-      <div className="card" style={styles.tableCard}>
-        <div style={styles.tableHeader}>
-          <h3 style={styles.tableTitle}>Cuentas</h3>
-        </div>
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>{t('accountNumber')}</th>
-                <th style={styles.th}>{t('userCode')}</th>
-                {isAdmin && <th style={styles.th}>{t('name')}</th>}
-                <th style={styles.th}>{t('level2')}</th>
-                <th style={styles.th}>{t('level3')}</th>
-                <th style={styles.th}>{t('complete')}</th>
+      <div style={styles.tableWrapper}>
+        <table style={styles.table}>
+          <thead>
+            <tr style={styles.thead}>
+              <th style={styles.th}>{t('accountNumber')}</th>
+              <th style={styles.th}>{t('userCode')}</th>
+              {isAdmin && <th style={styles.th}>{t('name')}</th>}
+              <th style={styles.th}>{t('level2')}</th>
+              <th style={styles.th}>{t('level3')}</th>
+              <th style={styles.th}>{t('complete')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.accounts.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>{t('noAccountsFound')}</td></tr>
+            ) : data.accounts.map(acc => (
+              <tr key={acc.account_number} style={styles.tr}>
+                <td style={styles.td}>{acc.account_number}</td>
+                <td style={styles.td}>#{acc.user_code}</td>
+                {isAdmin && <td style={styles.td}>{acc.first_name} {acc.last_name}</td>}
+                <td style={styles.td}>{renderStatus(acc.level2_status)}</td>
+                <td style={styles.td}>{renderStatus(acc.level3_status)}</td>
+                <td style={styles.td}>{renderStatus(acc.complete_status)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {data.accounts.length === 0 ? (
-                <tr><td colSpan={6} style={styles.emptyState}>{t('noAccountsFound')}</td></tr>
-              ) : data.accounts.map(acc => (
-                <tr key={acc.account_number}>
-                  <td style={styles.td}>
-                    <span style={styles.accountNumber}>#{acc.account_number}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <span className="badge badge-neutral">#{acc.user_code}</span>
-                  </td>
-                  {isAdmin && <td style={styles.td}>{acc.first_name} {acc.last_name}</td>}
-                  <td style={styles.td}>{renderStatus(acc.level2_status)}</td>
-                  <td style={styles.td}>{renderStatus(acc.level3_status)}</td>
-                  <td style={styles.td}>{renderStatus(acc.complete_status)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Balance summary */}
-      <div style={styles.balanceGrid}>
-        <div className="stat-card">
-          <div className="stat-label">{t('pendingBalance')}</div>
-          <div className="stat-value" style={{ color: '#f59e0b' }}>
-            {parseFloat(String(data.balance_summary.pending_collection_amount || 0)).toFixed(2)}
-          </div>
-          <div style={styles.currency}>USDC</div>
+      <div style={styles.balanceRow}>
+        <div style={styles.balanceCard}>
+          <div style={styles.balanceLabel}>{t('pendingBalance')}</div>
+          <div style={styles.balanceValue}>{parseFloat(String(data.balance_summary.pending_collection_amount || 0)).toFixed(2)} USDC</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">{t('amountRequested')}</div>
-          <div className="stat-value" style={{ color: '#8b5cf6' }}>
-            {parseFloat(String(data.balance_summary.amount_requested || 0)).toFixed(2)}
-          </div>
-          <div style={styles.currency}>USDC</div>
+        <div style={styles.balanceCard}>
+          <div style={styles.balanceLabel}>{t('amountRequested')}</div>
+          <div style={styles.balanceValue}>{parseFloat(String(data.balance_summary.amount_requested || 0)).toFixed(2)} USDC</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">{t('totalCollected')}</div>
-          <div className="stat-value" style={{ color: '#10b981' }}>
-            {parseFloat(String(data.balance_summary.collected_amount || 0)).toFixed(2)}
-          </div>
-          <div style={styles.currency}>USDC</div>
+        <div style={styles.balanceCard}>
+          <div style={styles.balanceLabel}>{t('totalCollected')}</div>
+          <div style={styles.balanceValue}>{parseFloat(String(data.balance_summary.collected_amount || 0)).toFixed(2)} USDC</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">{t('commissionsPaid')}</div>
-          <div className="stat-value" style={{ color: '#ef4444' }}>
-            {parseFloat(String(data.balance_summary.paid_commissions || 0)).toFixed(2)}
-          </div>
-          <div style={styles.currency}>USDC</div>
+        <div style={styles.balanceCard}>
+          <div style={styles.balanceLabel}>{t('commissionsPaid')}</div>
+          <div style={styles.balanceValue}>{parseFloat(String(data.balance_summary.paid_commissions || 0)).toFixed(2)} USDC</div>
         </div>
       </div>
     </div>
@@ -200,25 +154,24 @@ export default function Dashboard() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: '1400px', margin: '0 auto' },
-  title: { color: '#f59e0b', marginBottom: '2rem', fontSize: '1.75rem', fontWeight: 700 },
-  filterRow: { display: 'flex', gap: '0.75rem', marginBottom: '2rem', alignItems: 'center', flexWrap: 'wrap' },
-  input: { padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.9375rem', width: '240px', transition: 'all 0.2s' },
-  infoCard: { padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '3rem', flexWrap: 'wrap' },
-  infoItem: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
-  infoLabel: { color: '#64748b', fontSize: '0.8125rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' },
-  infoValue: { color: '#0f172a', fontSize: '1rem', fontWeight: 600 },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' },
-  statIcon: { fontSize: '2rem', marginBottom: '0.5rem' },
-  tableCard: { marginBottom: '2rem', overflow: 'hidden' },
-  tableHeader: { padding: '1.5rem', borderBottom: '1px solid #e2e8f0' },
-  tableTitle: { color: '#0f172a', fontSize: '1.125rem', fontWeight: 600, margin: 0 },
-  tableWrapper: { overflowX: 'auto' },
-  table: { width: '100%', borderCollapse: 'separate', borderSpacing: 0 },
-  th: { padding: '1rem 1.5rem', textAlign: 'left', color: '#64748b', fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '1rem 1.5rem', color: '#0f172a', fontSize: '0.9375rem', borderBottom: '1px solid #f1f5f9' },
-  accountNumber: { fontWeight: 600, color: '#3b82f6' },
-  emptyState: { textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '0.9375rem' },
-  balanceGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' },
-  currency: { color: '#64748b', fontSize: '0.875rem', fontWeight: 500, marginTop: '0.25rem' }
+  title: { color: '#f59e0b', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 700 },
+  filterRow: { display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' },
+  input: { padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.9rem', width: '220px' },
+  btn: { padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' },
+  btnSecondary: { padding: '0.6rem 1.2rem', background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' },
+  infoCard: { background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '8px', display: 'flex', gap: '2rem', marginBottom: '1.5rem', color: '#475569', fontSize: '0.9rem', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  levelsRow: { display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' },
+  levelCard: { background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '8px', flex: 1, minWidth: '120px', textAlign: 'center', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  levelLabel: { color: '#64748b', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 500 },
+  levelValue: { color: '#f59e0b', fontSize: '1.5rem', fontWeight: 700 },
+  tableWrapper: { background: '#ffffff', borderRadius: '8px', overflow: 'auto', marginBottom: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  thead: { background: '#f8fafc' },
+  th: { padding: '0.75rem 1rem', textAlign: 'left', color: '#475569', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' },
+  tr: { borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '0.75rem 1rem', color: '#0f172a', fontSize: '0.875rem' },
+  balanceRow: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
+  balanceCard: { background: '#ffffff', padding: '1.5rem', borderRadius: '8px', flex: 1, minWidth: '180px', textAlign: 'center', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  balanceLabel: { color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: 500 },
+  balanceValue: { color: '#10b981', fontSize: '1.4rem', fontWeight: 700 }
 };
