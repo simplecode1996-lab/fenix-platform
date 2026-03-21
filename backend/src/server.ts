@@ -17,7 +17,11 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 app.use(cors({
-  origin: ['https://fenix-initial.netlify.app', 'http://localhost:5173'],
+  origin: [
+    'https://fenix-initial.netlify.app',
+    'https://playful-cuchufli-378f67.netlify.app',
+    'http://localhost:5173'
+  ],
   credentials: true
 }));
 
