@@ -67,21 +67,21 @@ export default function CreateUser() {
 function Field({ label, name, type = 'text', value, onChange, required }: any) {
   return (
     <div style={{ marginBottom: '1rem' }}>
-      <label style={{ display: 'block', color: '#475569', marginBottom: '0.4rem', fontSize: '0.875rem', fontWeight: 500 }}>{label}</label>
+      <label style={{ display: 'block', color: '#475569', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} required={required}
-        style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.9rem', boxSizing: 'border-box' }} />
+        style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.9rem', boxSizing: 'border-box', transition: 'all 0.2s' }} />
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: '800px' },
-  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700 },
-  form: { background: '#ffffff', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.5rem' },
-  label: { display: 'block', color: '#475569', marginBottom: '0.4rem', fontSize: '0.875rem', fontWeight: 500 },
-  input: { width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.9rem', boxSizing: 'border-box' },
-  success: { color: '#10b981', marginBottom: '1rem', fontWeight: 500 },
-  error: { color: '#ef4444', marginBottom: '1rem', fontWeight: 500 },
-  btn: { padding: '0.75rem 2rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' }
+  container: { maxWidth: '900px', margin: '0 auto' },
+  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.75rem' },
+  form: { background: '#ffffff', padding: '2.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' },
+  label: { display: 'block', color: '#475569', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  input: { width: '100%', padding: '0.875rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.9rem', boxSizing: 'border-box', transition: 'all 0.2s' },
+  success: { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '1rem 1.25rem', borderRadius: '10px', marginBottom: '1.5rem', fontWeight: 500, border: '1px solid rgba(16, 185, 129, 0.2)' },
+  error: { background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '1rem 1.25rem', borderRadius: '10px', marginBottom: '1.5rem', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)' },
+  btn: { width: '100%', padding: '1rem 2rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)', transition: 'all 0.2s', marginTop: '1rem' }
 };
