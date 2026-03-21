@@ -100,14 +100,14 @@ export default function Login() {
             </div>
 
             {error && (
-              <div style={styles.alertError}>
+              <div style={styles.alertError} key="error-message">
                 <AlertCircle size={18} />
                 {error}
               </div>
             )}
 
             {forgotMessage && (
-              <div style={styles.alertSuccess}>
+              <div style={styles.alertSuccess} key="success-message">
                 <CheckCircle size={18} />
                 {forgotMessage}
               </div>

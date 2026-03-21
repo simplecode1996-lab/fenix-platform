@@ -6,7 +6,8 @@ export default function CreateUser() {
   const { t } = useLanguage();
   const [form, setForm] = useState({
     email: '', first_name: '', last_name: '', profile: 'user',
-    wallet: '', phone: '', dni: '', allowed_accounts_count: 10, password: ''
+    wallet: '', phone: '', dni: '', allowed_accounts_count: 10, 
+    registered_accounts_count: 0, password: ''
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +24,7 @@ export default function CreateUser() {
     try {
       const res = await api.post('/users', form);
       setMessage(`${t('userCreatedSuccess')} ${res.data.user.user_code}`);
-      setForm({ email: '', first_name: '', last_name: '', profile: 'user', wallet: '', phone: '', dni: '', allowed_accounts_count: 10, password: '' });
+      setForm({ email: '', first_name: '', last_name: '', profile: 'user', wallet: '', phone: '', dni: '', allowed_accounts_count: 10, registered_accounts_count: 0, password: '' });
     } catch (err: any) {
       setError(err.response?.data?.error || t('errorOccurred'));
     } finally {
@@ -51,6 +52,7 @@ export default function CreateUser() {
           <Field label={t('phone')} name="phone" value={form.phone} onChange={handleChange} />
           <Field label={t('dni')} name="dni" value={form.dni} onChange={handleChange} />
           <Field label={t('allowedAccounts')} name="allowed_accounts_count" type="number" value={String(form.allowed_accounts_count)} onChange={handleChange} />
+          <Field label={t('registeredAccounts')} name="registered_accounts_count" type="number" value={String(form.registered_accounts_count)} onChange={handleChange} />
         </div>
         {message && <p style={styles.success}>{message}</p>}
         {error && <p style={styles.error}>{error}</p>}

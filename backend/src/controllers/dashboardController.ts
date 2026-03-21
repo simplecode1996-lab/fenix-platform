@@ -21,43 +21,36 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       userInfo = userResult.rows[0] || null;
     }
 
-    // Get count of accounts at each level
-    let maxLevels = { max_level1: 0, max_level2: 0, max_level3: 0 };
-    if (isAdmin && !user_code) {
-      // Admin with no filter: show TOTAL COUNT of accounts at each level
-      const levelsResult = await pool.query(
-        `SELECT
-          COUNT(CASE WHEN level_1_date IS NOT NULL THEN 1 END) AS max_level1,
-          COUNT(CASE WHEN level_2_date IS NOT NULL THEN 1 END) AS max_level2,
-          COUNT(CASE WHEN level_3_date IS NOT NULL THEN 1 END) AS max_level3
-         FROM user_accounts`
-      );
-      maxLevels = levelsResult.rows[0];
-    } else if (targetUserCode) {
-      // Specific user: show COUNT of accounts at each level
-      const levelsResult = await pool.query(
-        `SELECT
-          COUNT(CASE WHEN level_1_date IS NOT NULL THEN 1 END) AS max_level1,
-          COUNT(CASE WHEN level_2_date IS NOT NULL THEN 1 END) AS max_level2,
-          COUNT(CASE WHEN level_3_date IS NOT NULL THEN 1 END) AS max_level3
-         FROM user_accounts WHERE user_code = $1`,
-        [targetUserCode]
-      );
-      maxLevels = levelsResult.rows[0];
-    }
+    // Get count of accounts at each level - ALWAYS GLOBAL (all users)
+    const levelsResult = await pool.query(
+      `SELECT
+        COUNT(CASE WHEN level_1_date IS NOT NULL THEN 1 END) AS max_level1,
+        COUNT(CASE WHEN level_2_date IS NOT NULL THEN 1 END) AS max_level2,
+        COUNT(CASE WHEN level_3_date IS NOT NULL THEN 1 END) AS max_level3
+       FROM user_accounts`
+    );
+    const maxLevels = levelsResult.rows[0];
 
-    // Global max account number for progression calculations
+    // Global max = count of Level 3 accounts that have been processed (paid 500 USDC)
     const globalMaxResult = await pool.query(
-      `SELECT COALESCE(MAX(account_number), 0) AS global_max FROM user_accounts`
+      `SELECT COUNT(*) AS global_max 
+       FROM user_accounts 
+       WHERE level_3_date IS NOT NULL AND level_3_processed = TRUE`
     );
     const globalMax = parseInt(globalMaxResult.rows[0].global_max);
+
+    // Total account count for progression calculations
+    const totalAccountsResult = await pool.query(
+      `SELECT COALESCE(MAX(account_number), 0) AS total_accounts FROM user_accounts`
+    );
+    const totalAccounts = parseInt(totalAccountsResult.rows[0].total_accounts);
 
     // Get accounts list
     let accountsQuery = '';
     let accountsParams: any[] = [];
 
     if (isAdmin && !user_code) {
-      // Admin with no filter: last 1000 accounts
+      // Admin with no filter: last 1000 accounts with user info
       accountsQuery = `
         SELECT ua.account_number, ua.user_code, u.first_name, u.last_name,
                ua.level_1_date, ua.level_2_date, ua.level_3_date
@@ -68,25 +61,28 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
     } else {
       // Specific user accounts
       accountsQuery = `
-        SELECT account_number, user_code, level_1_date, level_2_date, level_3_date
-        FROM user_accounts WHERE user_code = $1
-        ORDER BY account_number ASC
+        SELECT ua.account_number, ua.user_code, u.first_name, u.last_name,
+               ua.level_1_date, ua.level_2_date, ua.level_3_date
+        FROM user_accounts ua
+        JOIN users u ON ua.user_code = u.user_code
+        WHERE ua.user_code = $1
+        ORDER BY ua.account_number ASC
       `;
       accountsParams = [targetUserCode];
     }
 
     const accountsResult = await pool.query(accountsQuery, accountsParams);
 
-    // Calculate progression for each account
+    // Calculate progression for each account using totalAccounts
     const accounts = accountsResult.rows.map((acc: any) => {
       const n = acc.account_number;
       const level2At = n * 3;
       const level3At = n * 9;
       const completeAt = n * 27;
 
-      const level2Missing = level2At - globalMax;
-      const level3Missing = level3At - globalMax;
-      const completeMissing = completeAt - globalMax;
+      const level2Missing = level2At - totalAccounts;
+      const level3Missing = level3At - totalAccounts;
+      const completeMissing = completeAt - totalAccounts;
 
       return {
         ...acc,

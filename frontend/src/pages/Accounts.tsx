@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 
@@ -6,25 +6,46 @@ export default function Accounts() {
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [userCode, setUserCode] = useState('');
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [foundUser, setFoundUser] = useState<any>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const searchUser = async () => {
-    setError(''); setFoundUser(null);
-    try {
-      const res = await api.get('/users');
-      const all: any[] = res.data;
-      const found = all.find(u =>
-        (email && u.email.toLowerCase() === email.toLowerCase()) ||
-        (userCode && String(u.user_code) === userCode)
-      );
-      if (!found) { setError(t('userNotFound')); return; }
-      setFoundUser(found);
-    } catch {
-      setError(t('errorOccurred'));
+  // Load all users on mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const res = await api.get('/users');
+        setAllUsers(res.data);
+      } catch (err) {
+        console.error('Failed to load users:', err);
+      }
+    };
+    loadUsers();
+  }, []);
+
+  // Live search filter
+  useEffect(() => {
+    if (!email && !userCode) {
+      setFilteredUsers([]);
+      return;
     }
+    
+    const filtered = allUsers.filter(u =>
+      (email && u.email.toLowerCase().includes(email.toLowerCase())) ||
+      (userCode && String(u.user_code).includes(userCode))
+    );
+    setFilteredUsers(filtered);
+  }, [email, userCode, allUsers]);
+
+  const selectUser = (user: any) => {
+    setFoundUser(user);
+    setFilteredUsers([]);
+    setEmail('');
+    setUserCode('');
+    setError('');
   };
 
   const handleCreate = async (e: FormEvent) => {
@@ -52,12 +73,41 @@ export default function Accounts() {
       <div style={styles.card}>
         <h3 style={styles.sectionTitle}>{t('searchUser')}</h3>
         <div style={styles.searchRow}>
-          <input placeholder={t('email')} value={email} onChange={e => { setEmail(e.target.value); setUserCode(''); }}
-            style={styles.input} />
-          <span style={{ color: '#94a3b8' }}>or</span>
-          <input placeholder={t('userCode')} value={userCode} onChange={e => { setUserCode(e.target.value); setEmail(''); }}
-            style={{ ...styles.input, width: '140px' }} />
-          <button onClick={searchUser} style={styles.btn}>{t('search')}</button>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input 
+              placeholder={t('email')} 
+              value={email} 
+              onChange={e => { setEmail(e.target.value); setUserCode(''); setFoundUser(null); }}
+              style={styles.input} 
+            />
+            {filteredUsers.length > 0 && email && (
+              <div style={styles.dropdown}>
+                {filteredUsers.map(u => (
+                  <div key={u.user_code} style={styles.dropdownItem} onClick={() => selectUser(u)}>
+                    <strong>#{u.user_code}</strong> - {u.email} ({u.first_name} {u.last_name})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <span style={{ color: '#94a3b8' }}>o</span>
+          <div style={{ position: 'relative' }}>
+            <input 
+              placeholder={t('userCode')} 
+              value={userCode} 
+              onChange={e => { setUserCode(e.target.value); setEmail(''); setFoundUser(null); }}
+              style={{ ...styles.input, width: '140px' }} 
+            />
+            {filteredUsers.length > 0 && userCode && (
+              <div style={styles.dropdown}>
+                {filteredUsers.map(u => (
+                  <div key={u.user_code} style={styles.dropdownItem} onClick={() => selectUser(u)}>
+                    <strong>#{u.user_code}</strong> - {u.email} ({u.first_name} {u.last_name})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {foundUser && (
@@ -105,5 +155,7 @@ const styles: Record<string, React.CSSProperties> = {
   userInfo: { marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' },
   infoRow: { color: '#475569', fontSize: '0.9rem', marginBottom: '0.4rem' },
   infoLabel: { color: '#64748b', marginRight: '0.5rem', fontWeight: 500 },
-  detailsGrid: { display: 'flex', gap: '2rem', flexWrap: 'wrap', color: '#475569', fontSize: '0.9rem', marginBottom: '1rem' }
+  detailsGrid: { display: 'flex', gap: '2rem', flexWrap: 'wrap', color: '#475569', fontSize: '0.9rem', marginBottom: '1rem' },
+  dropdown: { position: 'absolute', top: '100%', left: 0, right: 0, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', marginTop: '0.25rem', maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', zIndex: 10 },
+  dropdownItem: { padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem', color: '#0f172a', transition: 'background 0.2s' }
 };

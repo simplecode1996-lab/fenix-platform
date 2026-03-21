@@ -106,8 +106,8 @@ export default function Dashboard() {
           <thead>
             <tr style={styles.thead}>
               <th style={styles.th}>{t('accountNumber')}</th>
+              <th style={styles.th}>{t('userCode')}</th>
               {isAdmin && <th style={styles.th}>{t('name')}</th>}
-              <th style={styles.th}>{t('created')}</th>
               <th style={styles.th}>{t('level2')}</th>
               <th style={styles.th}>{t('level3')}</th>
               <th style={styles.th}>{t('complete')}</th>
@@ -119,8 +119,8 @@ export default function Dashboard() {
             ) : data.accounts.map(acc => (
               <tr key={acc.account_number} style={styles.tr}>
                 <td style={styles.td}>{acc.account_number}</td>
+                <td style={styles.td}>#{acc.user_code}</td>
                 {isAdmin && <td style={styles.td}>{acc.first_name} {acc.last_name}</td>}
-                <td style={styles.td}>{acc.level_1_date ? new Date(acc.level_1_date).toLocaleDateString() : '-'}</td>
                 <td style={styles.td}>{renderStatus(acc.level2_status)}</td>
                 <td style={styles.td}>{renderStatus(acc.level3_status)}</td>
                 <td style={styles.td}>{renderStatus(acc.complete_status)}</td>
