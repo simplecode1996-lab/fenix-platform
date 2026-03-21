@@ -92,12 +92,12 @@ export default function RequestPayment() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700 },
-  card: { background: '#ffffff', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
-  infoRow: { color: '#475569', fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center' },
-  label: { color: '#64748b', minWidth: '130px', fontWeight: 500 },
-  input: { width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '1rem', boxSizing: 'border-box' },
-  breakdown: { background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' },
-  breakdownRow: { display: 'flex', justifyContent: 'space-between', color: '#475569', fontSize: '0.9rem', marginBottom: '0.5rem' },
-  btn: { width: '100%', padding: '0.85rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' }
+  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.75rem' },
+  card: { background: '#ffffff', padding: '2rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' },
+  infoRow: { color: '#475569', fontSize: '0.95rem', marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', padding: '0.75rem', background: '#f8fafc', borderRadius: '10px' },
+  label: { color: '#64748b', minWidth: '150px', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  input: { width: '100%', padding: '1rem 1.25rem', borderRadius: '12px', border: '2px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '1.25rem', fontWeight: 700, boxSizing: 'border-box', transition: 'all 0.2s' },
+  breakdown: { background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #fbbf24' },
+  breakdownRow: { display: 'flex', justifyContent: 'space-between', color: '#92400e', fontSize: '1rem', marginBottom: '0.75rem', fontWeight: 600 },
+  btn: { width: '100%', padding: '1rem 1.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)', transition: 'all 0.2s' }
 };

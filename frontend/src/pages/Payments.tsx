@@ -95,16 +95,16 @@ export default function Payments() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700 },
-  filterRow: { display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' },
-  input: { padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.9rem', width: '220px' },
-  btn: { padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' },
-  btnSecondary: { padding: '0.6rem 1.2rem', background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' },
-  tableWrapper: { background: '#ffffff', borderRadius: '8px', overflow: 'auto', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.75rem' },
+  filterRow: { display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center', background: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' },
+  input: { flex: 1, padding: '0.875rem 1.25rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.9rem', transition: 'all 0.2s' },
+  btn: { padding: '0.875rem 1.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap' },
+  btnSecondary: { padding: '0.875rem 1.5rem', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap' },
+  tableWrapper: { background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { background: '#f8fafc' },
-  th: { padding: '0.75rem 1rem', textAlign: 'left', color: '#475569', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' },
-  tr: { borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.75rem 1rem', color: '#0f172a', fontSize: '0.875rem' },
-  completeBtn: { padding: '0.4rem 0.75rem', background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem', boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)' }
+  thead: { background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' },
+  th: { padding: '1rem 1.25rem', textAlign: 'left', color: '#92400e', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  tr: { borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' },
+  td: { padding: '1rem 1.25rem', color: '#0f172a', fontSize: '0.9rem', fontWeight: 500 },
+  completeBtn: { padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap' }
 };
