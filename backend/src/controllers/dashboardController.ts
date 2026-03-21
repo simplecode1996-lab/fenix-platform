@@ -31,19 +31,20 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
     );
     const maxLevels = levelsResult.rows[0];
 
-    // Global max = count of Level 3 accounts that have been processed (paid 500 USDC)
-    const globalMaxResult = await pool.query(
-      `SELECT COUNT(*) AS global_max 
-       FROM user_accounts 
-       WHERE level_3_date IS NOT NULL AND level_3_processed = TRUE`
-    );
-    const globalMax = parseInt(globalMaxResult.rows[0].global_max);
-
     // Total account count for progression calculations
     const totalAccountsResult = await pool.query(
       `SELECT COALESCE(MAX(account_number), 0) AS total_accounts FROM user_accounts`
     );
     const totalAccounts = parseInt(totalAccountsResult.rows[0].total_accounts);
+
+    // Global max = count of COMPLETE accounts (reached N×27)
+    const globalMaxResult = await pool.query(
+      `SELECT COUNT(*) AS global_max 
+       FROM user_accounts 
+       WHERE account_number * 27 <= $1`,
+      [totalAccounts]
+    );
+    const globalMax = parseInt(globalMaxResult.rows[0].global_max);
 
     // Get accounts list
     let accountsQuery = '';
