@@ -9,6 +9,7 @@ import walletRoutes from './routes/walletRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import passwordRoutes from './routes/passwordRoutes';
 import processRoutes from './routes/processRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 dotenv.config();
 
