@@ -21,9 +21,13 @@ app.use(cors({
   origin: [
     'https://fenix-initial.netlify.app',
     'https://playful-cuchufli-378f67.netlify.app',
+    'https://genuine-granita-4588ab.netlify.app/',
     'http://localhost:5173'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
@@ -38,6 +42,7 @@ app.use('/api/wallets', walletRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/password', passwordRoutes);
 app.use('/api/process', processRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

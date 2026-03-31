@@ -1,11 +1,12 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   LayoutDashboard, Users, UserPlus, Settings, CreditCard, 
-  Wallet, DollarSign, TrendingUp, LogOut, Menu, X, ChevronRight, Languages 
+  Wallet, DollarSign, TrendingUp, LogOut, Menu, X, ChevronRight, Languages, Bell
 } from 'lucide-react';
+import api from '../services/api';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout, isAdmin } = useAuth();
@@ -13,6 +14,10 @@ export default function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   const adminMenu = [
     { label: t('dashboard'), path: '/dashboard', icon: LayoutDashboard },
@@ -31,6 +36,69 @@ export default function Layout({ children }: { children: ReactNode }) {
   ];
 
   const menu = isAdmin ? adminMenu : userMenu;
+
+  // Load notifications for admin
+  useEffect(() => {
+    if (isAdmin) {
+      loadNotifications();
+      loadUnreadCount();
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(() => {
+        loadUnreadCount();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin]);
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showNotifications]);
+
+  const loadNotifications = async () => {
+    try {
+      const res = await api.get('/notifications');
+      setNotifications(res.data);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
+  };
+
+  const loadUnreadCount = async () => {
+    try {
+      const res = await api.get('/notifications/unread-count');
+      setUnreadCount(res.data.count);
+    } catch (error) {
+      console.error('Failed to load unread count:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await api.post('/notifications/mark-all-read');
+      setUnreadCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
+  };
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && unreadCount > 0) {
+      // Load fresh notifications when opening
+      loadNotifications();
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -97,6 +165,75 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Header */}
         <header style={styles.header}>
           <div style={styles.headerRight}>
+            {/* Notifications (Admin only) */}
+            {isAdmin && (
+              <div style={styles.notificationContainer} ref={notificationRef}>
+                <button
+                  onClick={toggleNotifications}
+                  style={styles.notificationBtn}
+                  title={t('notifications')}
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span style={styles.notificationBadge}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {showNotifications && (
+                  <div style={styles.notificationDropdown}>
+                    <div style={styles.notificationHeader}>
+                      <span style={styles.notificationTitle}>{t('notifications')}</span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          style={styles.markAllBtn}
+                        >
+                          {t('markAllRead')}
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div style={styles.notificationList}>
+                      {notifications.length === 0 ? (
+                        <div style={styles.noNotifications}>
+                          {t('noNotifications')}
+                        </div>
+                      ) : (
+                        notifications.map(notification => (
+                          <div
+                            key={notification.notification_id}
+                            style={{
+                              ...styles.notificationItem,
+                              ...(notification.is_read ? {} : styles.notificationItemUnread)
+                            }}
+                          >
+                            <div style={styles.notificationContent}>
+                              <div style={styles.notificationMessage}>
+                                {notification.message}
+                              </div>
+                              {notification.first_name && (
+                                <div style={styles.notificationUser}>
+                                  {notification.first_name} {notification.last_name} ({notification.email})
+                                </div>
+                              )}
+                              <div style={styles.notificationTime}>
+                                {new Date(notification.created_at).toLocaleString()}
+                              </div>
+                            </div>
+                            {!notification.is_read && (
+                              <div style={styles.unreadDot}></div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* Language Switcher */}
             <div style={styles.langSwitcher}>
               <Languages size={18} style={{ color: '#94a3b8' }} />
@@ -336,5 +473,121 @@ const styles: Record<string, React.CSSProperties> = {
   langBtnActive: {
     color: '#f59e0b',
     background: 'rgba(245, 158, 11, 0.1)',
+  },
+  notificationContainer: {
+    position: 'relative',
+  },
+  notificationBtn: {
+    position: 'relative',
+    background: 'transparent',
+    border: 'none',
+    color: '#64748b',
+    cursor: 'pointer',
+    padding: '0.5rem',
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: '0.25rem',
+    right: '0.25rem',
+    background: '#ef4444',
+    color: '#ffffff',
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    borderRadius: '10px',
+    minWidth: '18px',
+    height: '18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1,
+  },
+  notificationDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    width: '380px',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+    zIndex: 50,
+    marginTop: '0.5rem',
+  },
+  notificationHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '1rem 1.25rem',
+    borderBottom: '1px solid #e2e8f0',
+  },
+  notificationTitle: {
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: '#0f172a',
+  },
+  markAllBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: '#f59e0b',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '0.25rem 0.5rem',
+    borderRadius: '6px',
+    transition: 'background-color 0.2s ease',
+  },
+  notificationList: {
+    maxHeight: '400px',
+    overflowY: 'auto',
+  },
+  noNotifications: {
+    padding: '2rem',
+    textAlign: 'center',
+    color: '#94a3b8',
+    fontSize: '0.9rem',
+  },
+  notificationItem: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '0.75rem',
+    padding: '1rem 1.25rem',
+    borderBottom: '1px solid #f1f5f9',
+    transition: 'background-color 0.2s ease',
+  },
+  notificationItemUnread: {
+    background: 'rgba(245, 158, 11, 0.05)',
+    borderLeft: '3px solid #f59e0b',
+  },
+  notificationContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  notificationMessage: {
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    color: '#0f172a',
+    marginBottom: '0.25rem',
+  },
+  notificationUser: {
+    fontSize: '0.8rem',
+    color: '#64748b',
+    marginBottom: '0.25rem',
+  },
+  notificationTime: {
+    fontSize: '0.75rem',
+    color: '#94a3b8',
+  },
+  unreadDot: {
+    width: '8px',
+    height: '8px',
+    background: '#f59e0b',
+    borderRadius: '50%',
+    flexShrink: 0,
+    marginTop: '0.25rem',
   },
 };

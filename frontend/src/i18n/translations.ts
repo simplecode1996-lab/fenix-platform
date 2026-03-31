@@ -13,7 +13,14 @@ export const translations = {
     clear: 'Clear',
     back: 'Back',
     next: 'Next',
+    previous: 'Previous',
     submit: 'Submit',
+    page: 'Page',
+    of: 'of',
+    total: 'total',
+    or: 'or',
+    showing: 'Showing',
+    showAll: 'Show All',
     
     // Auth
     login: 'Sign In',
@@ -154,6 +161,13 @@ export const translations = {
     
     // Roles
     administrator: 'Administrator',
+    
+    // Notifications
+    notifications: 'Notifications',
+    noNotifications: 'No notifications',
+    markAllRead: 'Mark all as read',
+    passwordResetRequest: 'Password reset request',
+    newNotification: 'New notification',
   },
   es: {
     // Common
@@ -169,7 +183,14 @@ export const translations = {
     clear: 'Limpiar',
     back: 'Atrás',
     next: 'Siguiente',
+    previous: 'Anterior',
     submit: 'Enviar',
+    page: 'Página',
+    of: 'de',
+    total: 'total',
+    or: 'o',
+    showing: 'Mostrando',
+    showAll: 'Mostrar Todo',
     
     // Auth
     login: 'Iniciar Sesión',
@@ -310,6 +331,13 @@ export const translations = {
     
     // Roles
     administrator: 'Administrador',
+    
+    // Notifications
+    notifications: 'Notificaciones',
+    noNotifications: 'No hay notificaciones',
+    markAllRead: 'Marcar todas como leídas',
+    passwordResetRequest: 'Solicitud de restablecimiento de contraseña',
+    newNotification: 'Nueva notificación',
   }
 };
 

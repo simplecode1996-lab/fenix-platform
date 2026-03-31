@@ -10,6 +10,6 @@ router.use(authenticateToken, requireAdmin);
 router.get('/', getNotifications);
 router.get('/unread-count', getUnreadCount);
 router.put('/:notification_id/read', markAsRead);
-router.put('/mark-all-read', markAllAsRead);
+router.post('/mark-all-read', markAllAsRead);
 
 export default router;
