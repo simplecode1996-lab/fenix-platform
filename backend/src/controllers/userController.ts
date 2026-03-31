@@ -96,7 +96,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const { first_name, last_name, wallet, phone, dni, profile, allowed_accounts_count, currency } = req.body;
+    const { first_name, last_name, wallet, phone, dni, profile, allowed_accounts_count, registered_accounts_count, currency } = req.body;
 
     // Build dynamic update query
     const fields: string[] = [];
@@ -114,6 +114,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     if (req.user?.profile === 'admin') {
       if (profile !== undefined) { fields.push(`profile = $${idx++}`); values.push(profile); }
       if (allowed_accounts_count !== undefined) { fields.push(`allowed_accounts_count = $${idx++}`); values.push(allowed_accounts_count); }
+      if (registered_accounts_count !== undefined) { fields.push(`registered_accounts_count = $${idx++}`); values.push(registered_accounts_count); }
     }
 
     if (fields.length === 0) {
@@ -126,7 +127,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
 
     const result = await pool.query(
       `UPDATE users SET ${fields.join(', ')} WHERE user_code = $${idx}
-       RETURNING user_code, email, first_name, last_name, profile, wallet, phone, dni, allowed_accounts_count, currency`,
+       RETURNING user_code, email, first_name, last_name, profile, wallet, phone, dni, allowed_accounts_count, registered_accounts_count, currency`,
       values
     );
 

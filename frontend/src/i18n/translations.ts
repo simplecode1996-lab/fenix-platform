@@ -21,6 +21,10 @@ export const translations = {
     or: 'or',
     showing: 'Showing',
     showAll: 'Show All',
+    allFieldsRequired: 'All fields are required',
+    selectCurrency: 'Select Currency',
+    manageWallets: 'Manage Fenix platform wallet addresses',
+    wallet: 'Wallet',
     
     // Auth
     login: 'Sign In',
@@ -153,6 +157,15 @@ export const translations = {
     copy: 'Copy',
     walletsNotice: '⚠ Always verify the wallet address before sending funds. Contact an administrator if you have any doubts.',
     noWalletsConfigured: 'No wallets configured',
+    addWallet: 'Add Wallet',
+    editWallet: 'Edit Wallet',
+    deleteWallet: 'Delete Wallet',
+    currency: 'Currency',
+    network: 'Network',
+    walletAddress: 'Wallet Address',
+    walletCreated: 'Wallet created successfully',
+    walletUpdated: 'Wallet updated successfully',
+    walletDeleted: 'Wallet deleted successfully',
     
     // Messages
     confirmAction: 'Confirm this action?',
@@ -191,6 +204,10 @@ export const translations = {
     or: 'o',
     showing: 'Mostrando',
     showAll: 'Mostrar Todo',
+    allFieldsRequired: 'Todos los campos son obligatorios',
+    selectCurrency: 'Seleccionar Moneda',
+    manageWallets: 'Gestionar direcciones de wallet de la plataforma Fenix',
+    wallet: 'Wallet',
     
     // Auth
     login: 'Iniciar Sesión',
@@ -323,6 +340,15 @@ export const translations = {
     copy: 'Copiar',
     walletsNotice: '⚠ Siempre verifica la dirección de wallet antes de enviar fondos. Contacta a un administrador si tienes dudas.',
     noWalletsConfigured: 'No hay wallets configuradas',
+    addWallet: 'Agregar Wallet',
+    editWallet: 'Editar Wallet',
+    deleteWallet: 'Eliminar Wallet',
+    currency: 'Moneda',
+    network: 'Red',
+    walletAddress: 'Dirección de Wallet',
+    walletCreated: 'Wallet creada exitosamente',
+    walletUpdated: 'Wallet actualizada exitosamente',
+    walletDeleted: 'Wallet eliminada exitosamente',
     
     // Messages
     confirmAction: '¿Confirmar esta acción?',

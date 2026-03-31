@@ -9,7 +9,8 @@ export default function UpdateData() {
   const [users, setUsers] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState<any>({});
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   
@@ -36,12 +37,28 @@ export default function UpdateData() {
     }
   }, []);
 
+  // Live search filter similar to User Accounts page
+  useEffect(() => {
+    if (!isAdmin || !searchTerm) {
+      setFilteredUsers([]);
+      return;
+    }
+    
+    const filtered = users.filter(u =>
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(u.user_code).includes(searchTerm)
+    );
+    setFilteredUsers(filtered.slice(0, 10)); // Limit to 10 results
+  }, [searchTerm, users, isAdmin]);
+
   const selectUser = (u: any) => {
     setSelected(u);
     setForm({ ...u });
     setMessage(''); setError('');
     setShowPasswordChange(false);
     setShowAdminReset(false);
+    setFilteredUsers([]);
+    setSearchTerm('');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -55,6 +72,17 @@ export default function UpdateData() {
     try {
       await api.put(`/users/${selected.user_code}`, form);
       setMessage(t('userUpdated'));
+      
+      // Refresh the selected user data to show updated values
+      const updatedUser = await api.get(`/users/${selected.user_code}`);
+      setSelected(updatedUser.data);
+      setForm(updatedUser.data);
+      
+      // Also refresh the users list if admin
+      if (isAdmin) {
+        const updatedUsers = await api.get('/users');
+        setUsers(updatedUsers.data);
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || t('errorOccurred'));
     }
@@ -112,16 +140,41 @@ export default function UpdateData() {
       {isAdmin && (
         <div style={styles.sidebar}>
           <h3 style={styles.sideTitle}>{t('updateData')}</h3>
-          <input placeholder={t('search')} value={search} onChange={e => setSearch(e.target.value)} style={styles.searchInput} />
-          <div style={styles.userList}>
-            {filtered.map(u => (
-              <div key={u.user_code} onClick={() => selectUser(u)}
-                style={{ ...styles.userItem, ...(selected?.user_code === u.user_code ? styles.userItemActive : {}) }}>
-                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>#{u.user_code} {u.first_name} {u.last_name}</div>
-                <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{u.email}</div>
+          
+          {/* Live search similar to User Accounts */}
+          <div style={styles.searchContainer}>
+            <input 
+              placeholder={`${t('search')} ${t('email')} ${t('or')} ${t('userCode')}...`}
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+              style={styles.searchInput} 
+            />
+            {filteredUsers.length > 0 && (
+              <div style={styles.dropdown}>
+                {filteredUsers.map(user => (
+                  <div
+                    key={user.user_code}
+                    onClick={() => selectUser(user)}
+                    style={styles.dropdownItem}
+                  >
+                    <div style={styles.dropdownUser}>
+                      <span style={styles.dropdownName}>{user.first_name} {user.last_name}</span>
+                      <span style={styles.dropdownEmail}>{user.email}</span>
+                      <span style={styles.dropdownCode}>#{user.user_code}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
+          
+          {selected && (
+            <div style={styles.selectedUser}>
+              <span style={styles.selectedUserText}>
+                {selected.first_name} {selected.last_name} (#{selected.user_code})
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -150,6 +203,7 @@ export default function UpdateData() {
                       </select>
                     </div>
                     <EditField label={t('allowedAccounts')} name="allowed_accounts_count" type="number" value={String(form.allowed_accounts_count || 10)} onChange={handleChange} />
+                    <EditField label={t('registeredAccounts')} name="registered_accounts_count" type="number" value={String(form.registered_accounts_count || 0)} onChange={handleChange} />
                   </>
                 )}
               </div>
@@ -246,9 +300,71 @@ function EditField({ label, name, type = 'text', value, onChange }: any) {
 
 const styles: Record<string, React.CSSProperties> = {
   title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700 },
-  sidebar: { width: '280px', background: '#ffffff', borderRadius: '12px', padding: '1rem', flexShrink: 0, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
+  sidebar: { width: '320px', background: '#ffffff', borderRadius: '12px', padding: '1rem', flexShrink: 0, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' },
   sideTitle: { color: '#f59e0b', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: 700 },
-  searchInput: { width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', fontSize: '0.85rem', marginBottom: '0.75rem', boxSizing: 'border-box' },
+  searchContainer: { position: 'relative', marginBottom: '1rem' },
+  searchInput: { 
+    width: '100%', 
+    padding: '0.75rem', 
+    borderRadius: '8px', 
+    border: '2px solid #e2e8f0', 
+    background: '#ffffff', 
+    color: '#0f172a', 
+    fontSize: '0.9rem', 
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease'
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    background: '#ffffff',
+    border: '2px solid #e2e8f0',
+    borderTop: 'none',
+    borderRadius: '0 0 8px 8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    zIndex: 10,
+    maxHeight: '300px',
+    overflowY: 'auto'
+  },
+  dropdownItem: {
+    padding: '0.75rem',
+    cursor: 'pointer',
+    borderBottom: '1px solid #f1f5f9',
+    transition: 'background-color 0.2s ease'
+  },
+  dropdownUser: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  dropdownName: {
+    fontWeight: 600,
+    color: '#0f172a',
+    fontSize: '0.9rem'
+  },
+  dropdownEmail: {
+    color: '#64748b',
+    fontSize: '0.8rem'
+  },
+  dropdownCode: {
+    color: '#f59e0b',
+    fontSize: '0.75rem',
+    fontWeight: 600
+  },
+  selectedUser: {
+    padding: '0.75rem',
+    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.08) 100%)',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+    borderRadius: '8px',
+    marginBottom: '1rem'
+  },
+  selectedUserText: {
+    color: '#d97706',
+    fontSize: '0.9rem',
+    fontWeight: 600
+  },
   userList: { maxHeight: '70vh', overflowY: 'auto' },
   userItem: { padding: '0.75rem', borderRadius: '6px', cursor: 'pointer', marginBottom: '0.25rem', color: '#475569', transition: 'all 0.2s ease' },
   userItemActive: { background: '#f8fafc', border: '1px solid #e2e8f0' },

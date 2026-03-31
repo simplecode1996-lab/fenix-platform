@@ -65,7 +65,7 @@ export const requestPayment = async (req: AuthRequest, res: Response): Promise<v
 
     if (requested_amount > pendingBalance) {
       res.status(400).json({
-        error: `Requested amount (${requested_amount}) exceeds available balance (${pendingBalance})`
+        error: 'The requested amount cannot exceed the Available Balance.'
       });
       return;
     }
