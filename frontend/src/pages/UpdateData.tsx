@@ -129,12 +129,6 @@ export default function UpdateData() {
     }
   };
 
-  const filtered = users.filter(u =>
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    String(u.user_code).includes(search) ||
-    `${u.first_name} ${u.last_name}`.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div style={{ display: 'flex', gap: '1.5rem' }}>
       {isAdmin && (

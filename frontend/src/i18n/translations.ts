@@ -24,7 +24,6 @@ export const translations = {
     allFieldsRequired: 'All fields are required',
     selectCurrency: 'Select Currency',
     manageWallets: 'Manage Fenix platform wallet addresses',
-    wallet: 'Wallet',
     
     // Auth
     login: 'Sign In',
@@ -207,7 +206,6 @@ export const translations = {
     allFieldsRequired: 'Todos los campos son obligatorios',
     selectCurrency: 'Seleccionar Moneda',
     manageWallets: 'Gestionar direcciones de wallet de la plataforma Fenix',
-    wallet: 'Wallet',
     
     // Auth
     login: 'Iniciar Sesión',
