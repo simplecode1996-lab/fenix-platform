@@ -5,11 +5,33 @@ import { AuthRequest } from '../middleware/auth';
 // GET dashboard data
 export const getDashboard = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { user_code } = req.query;
+    const { user_code, email, page = '1', limit = '50' } = req.query;
     const isAdmin = req.user?.profile === 'admin';
-    const targetUserCode = isAdmin && user_code ? parseInt(user_code as string) : req.user?.user_code;
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const offset = (pageNum - 1) * limitNum;
 
-    // Get user info
+    let targetUserCode = null;
+    
+    // Handle search by email or user_code
+    if (isAdmin && (user_code || email)) {
+      if (email) {
+        // Search by email
+        const emailResult = await pool.query(
+          'SELECT user_code FROM users WHERE email ILIKE $1',
+          [`%${email}%`]
+        );
+        if (emailResult.rows.length > 0) {
+          targetUserCode = emailResult.rows[0].user_code;
+        }
+      } else if (user_code) {
+        targetUserCode = parseInt(user_code as string);
+      }
+    } else if (!isAdmin) {
+      targetUserCode = req.user?.user_code;
+    }
+
+    // Get user info if specific user
     let userInfo = null;
     if (targetUserCode) {
       const userResult = await pool.query(
@@ -46,20 +68,27 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
     );
     const globalMax = parseInt(globalMaxResult.rows[0].global_max);
 
-    // Get accounts list
+    // Get accounts list with pagination
     let accountsQuery = '';
     let accountsParams: any[] = [];
+    let totalAccountsQuery = '';
+    let totalAccountsParams: any[] = [];
 
-    if (isAdmin && !user_code) {
-      // Admin with no filter: last 1000 accounts with user info
+    if (isAdmin && !targetUserCode) {
+      // Admin with no filter: paginated accounts
       accountsQuery = `
         SELECT ua.account_number, ua.user_code, u.first_name, u.last_name,
                ua.level_1_date, ua.level_2_date, ua.level_3_date
         FROM user_accounts ua
         JOIN users u ON ua.user_code = u.user_code
-        ORDER BY ua.account_number DESC LIMIT 1000
+        ORDER BY ua.account_number DESC 
+        LIMIT $1 OFFSET $2
       `;
-    } else {
+      accountsParams = [limitNum, offset];
+      
+      totalAccountsQuery = 'SELECT COUNT(*) as total FROM user_accounts';
+      totalAccountsParams = [];
+    } else if (targetUserCode) {
       // Specific user accounts
       accountsQuery = `
         SELECT ua.account_number, ua.user_code, u.first_name, u.last_name,
@@ -68,11 +97,21 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
         JOIN users u ON ua.user_code = u.user_code
         WHERE ua.user_code = $1
         ORDER BY ua.account_number ASC
+        LIMIT $2 OFFSET $3
       `;
-      accountsParams = [targetUserCode];
+      accountsParams = [targetUserCode, limitNum, offset];
+      
+      totalAccountsQuery = 'SELECT COUNT(*) as total FROM user_accounts WHERE user_code = $1';
+      totalAccountsParams = [targetUserCode];
     }
 
-    const accountsResult = await pool.query(accountsQuery, accountsParams);
+    const [accountsResult, totalResult] = await Promise.all([
+      pool.query(accountsQuery, accountsParams),
+      pool.query(totalAccountsQuery, totalAccountsParams)
+    ]);
+
+    const totalRecords = parseInt(totalResult.rows[0]?.total || '0');
+    const totalPages = Math.ceil(totalRecords / limitNum);
 
     // Calculate progression for each account using totalAccounts
     const accounts = accountsResult.rows.map((acc: any) => {
@@ -104,7 +143,7 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       amount_requested: 0 
     };
 
-    if (isAdmin && !user_code) {
+    if (isAdmin && !targetUserCode) {
       // Admin no filter: sum of all users
       const totalsResult = await pool.query(
         `SELECT
@@ -143,7 +182,15 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       max_levels: maxLevels,
       global_max: globalMax,
       accounts,
-      balance_summary: balanceSummary
+      balance_summary: balanceSummary,
+      pagination: {
+        current_page: pageNum,
+        total_pages: totalPages,
+        total_records: totalRecords,
+        limit: limitNum,
+        has_next: pageNum < totalPages,
+        has_prev: pageNum > 1
+      }
     });
   } catch (error) {
     console.error('Dashboard error:', error);
