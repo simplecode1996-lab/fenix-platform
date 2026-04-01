@@ -25,6 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { label: t('updateData'), path: '/update-data', icon: Settings },
     { label: t('userAccounts'), path: '/accounts', icon: Users },
     { label: t('payments'), path: '/payments', icon: DollarSign },
+    { label: t('fenixWallets'), path: '/wallets', icon: Wallet },
     { label: t('generateRights'), path: '/generate-rights', icon: TrendingUp },
   ];
 
