@@ -5,10 +5,30 @@ import { AuthRequest } from '../middleware/auth';
 // GET all Fenix wallets (all authenticated users)
 export const getFenixWallets = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const result = await pool.query(
-      `SELECT wallet_id, currency, wallet_address, network, created_at
-       FROM fenix_wallets ORDER BY currency ASC`
-    );
+    // Try to get wallets with network column first
+    let result;
+    try {
+      result = await pool.query(
+        `SELECT wallet_id, currency, wallet_address, network, created_at
+         FROM fenix_wallets ORDER BY currency ASC`
+      );
+    } catch (networkError: any) {
+      // If network column doesn't exist, get without it
+      if (networkError.code === '42703') { // column does not exist
+        result = await pool.query(
+          `SELECT wallet_id, currency, wallet_address, created_at
+           FROM fenix_wallets ORDER BY currency ASC`
+        );
+        // Add default network to each row
+        result.rows = result.rows.map((row: any) => ({
+          ...row,
+          network: 'Ethereum'
+        }));
+      } else {
+        throw networkError;
+      }
+    }
+    
     res.json(result.rows);
   } catch (error) {
     console.error('Get wallets error:', error);
@@ -21,17 +41,35 @@ export const createWallet = async (req: AuthRequest, res: Response): Promise<voi
   try {
     const { currency, wallet_address, network } = req.body;
 
-    if (!currency || !wallet_address || !network) {
-      res.status(400).json({ error: 'Currency, wallet address, and network are required' });
+    if (!currency || !wallet_address) {
+      res.status(400).json({ error: 'Currency and wallet address are required' });
       return;
     }
 
-    const result = await pool.query(
-      `INSERT INTO fenix_wallets (currency, wallet_address, network)
-       VALUES ($1, $2, $3)
-       RETURNING wallet_id, currency, wallet_address, network, created_at`,
-      [currency, wallet_address, network]
-    );
+    // Check if network column exists, if not, insert without it
+    let result;
+    try {
+      result = await pool.query(
+        `INSERT INTO fenix_wallets (currency, wallet_address, network)
+         VALUES ($1, $2, $3)
+         RETURNING wallet_id, currency, wallet_address, network, created_at`,
+        [currency, wallet_address, network || 'Ethereum']
+      );
+    } catch (networkError: any) {
+      // If network column doesn't exist, insert without it
+      if (networkError.code === '42703') { // column does not exist
+        result = await pool.query(
+          `INSERT INTO fenix_wallets (currency, wallet_address)
+           VALUES ($1, $2)
+           RETURNING wallet_id, currency, wallet_address, created_at`,
+          [currency, wallet_address]
+        );
+        // Add network field to response
+        result.rows[0].network = network || 'Ethereum';
+      } else {
+        throw networkError;
+      }
+    }
 
     res.status(201).json({ 
       message: 'Wallet created successfully', 
@@ -49,18 +87,39 @@ export const updateWallet = async (req: AuthRequest, res: Response): Promise<voi
     const { wallet_id } = req.params;
     const { currency, wallet_address, network } = req.body;
 
-    if (!currency || !wallet_address || !network) {
-      res.status(400).json({ error: 'Currency, wallet address, and network are required' });
+    if (!currency || !wallet_address) {
+      res.status(400).json({ error: 'Currency and wallet address are required' });
       return;
     }
 
-    const result = await pool.query(
-      `UPDATE fenix_wallets 
-       SET currency = $1, wallet_address = $2, network = $3, updated_at = CURRENT_TIMESTAMP
-       WHERE wallet_id = $4
-       RETURNING wallet_id, currency, wallet_address, network, created_at`,
-      [currency, wallet_address, network, wallet_id]
-    );
+    // Try to update with network column first
+    let result;
+    try {
+      result = await pool.query(
+        `UPDATE fenix_wallets 
+         SET currency = $1, wallet_address = $2, network = $3, updated_at = CURRENT_TIMESTAMP
+         WHERE wallet_id = $4
+         RETURNING wallet_id, currency, wallet_address, network, created_at`,
+        [currency, wallet_address, network || 'Ethereum', wallet_id]
+      );
+    } catch (networkError: any) {
+      // If network column doesn't exist, update without it
+      if (networkError.code === '42703') { // column does not exist
+        result = await pool.query(
+          `UPDATE fenix_wallets 
+           SET currency = $1, wallet_address = $2
+           WHERE wallet_id = $3
+           RETURNING wallet_id, currency, wallet_address, created_at`,
+          [currency, wallet_address, wallet_id]
+        );
+        // Add network field to response
+        if (result.rows.length > 0) {
+          result.rows[0].network = network || 'Ethereum';
+        }
+      } else {
+        throw networkError;
+      }
+    }
 
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'Wallet not found' });

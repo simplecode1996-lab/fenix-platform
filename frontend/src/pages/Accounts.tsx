@@ -56,9 +56,12 @@ export default function Accounts() {
     try {
       const res = await api.post('/accounts', { user_code: foundUser.user_code });
       setMessage(`${t('accountCreated')} #${res.data.account.account_number}`);
-      // Refresh user data
-      const updated = await api.get(`/users/${foundUser.user_code}`);
-      setFoundUser(updated.data);
+      
+      // Clear all form data to allow new user selection
+      setFoundUser(null);
+      setEmail('');
+      setUserCode('');
+      setFilteredUsers([]);
     } catch (err: any) {
       setError(err.response?.data?.error || t('errorOccurred'));
     } finally {

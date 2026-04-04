@@ -45,7 +45,10 @@ export const generateCollectionRights = async (req: AuthRequest, res: Response):
 
       // Get the owner of the completed account
       const ownerResult = await client.query(
-        `SELECT user_code, wallet FROM user_accounts WHERE account_number = $1`,
+        `SELECT ua.user_code, u.wallet 
+         FROM user_accounts ua
+         JOIN users u ON ua.user_code = u.user_code
+         WHERE ua.account_number = $1`,
         [completedAccountNumber]
       );
 
@@ -88,7 +91,7 @@ export const generateCollectionRights = async (req: AuthRequest, res: Response):
       await client.query(
         `INSERT INTO user_accounts (account_number, user_code, user_wallet, paid_amount, investment_amount)
          VALUES ($1, $2, $3, 0, 0)`,
-        [nextAccountNumber, owner.user_code, owner.wallet]
+        [nextAccountNumber, owner.user_code, owner.wallet || null]
       );
 
       processedAccounts.push(account.account_number);
