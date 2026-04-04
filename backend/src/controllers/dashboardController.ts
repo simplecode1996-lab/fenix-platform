@@ -81,7 +81,7 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
                ua.level_1_date, ua.level_2_date, ua.level_3_date
         FROM user_accounts ua
         JOIN users u ON ua.user_code = u.user_code
-        ORDER BY ua.account_number DESC 
+        ORDER BY ua.account_number ASC 
         LIMIT $1 OFFSET $2
       `;
       accountsParams = [limitNum, offset];
@@ -96,7 +96,7 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
         FROM user_accounts ua
         JOIN users u ON ua.user_code = u.user_code
         WHERE ua.user_code = $1
-        ORDER BY ua.account_number DESC
+        ORDER BY ua.account_number ASC
         LIMIT $2 OFFSET $3
       `;
       accountsParams = [targetUserCode, limitNum, offset];
