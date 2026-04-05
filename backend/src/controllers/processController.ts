@@ -119,22 +119,30 @@ export const generateCollectionRights = async (req: AuthRequest, res: Response):
   }
 };
 
-// Initial Account Generation Process (one-time)
+// Initial Account Generation Process (one-time, with testing mode)
 export const initialAccountGeneration = async (req: AuthRequest, res: Response): Promise<void> => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
+    const { force_reset } = req.body; // Allow force reset for testing
 
     // Check if already run using system_settings
     const settingCheck = await client.query(
       `SELECT setting_value FROM system_settings WHERE setting_key = 'initial_generation_completed'`
     );
 
-    if (settingCheck.rows.length > 0 && settingCheck.rows[0].setting_value === 'true') {
+    if (!force_reset && settingCheck.rows.length > 0 && settingCheck.rows[0].setting_value === 'true') {
       res.status(400).json({ 
         error: 'Initial generation already completed. This process can only run once.'
       });
       return;
+    }
+
+    // If force_reset is true, clear user_accounts table first
+    if (force_reset) {
+      await client.query('DELETE FROM user_accounts');
+      console.log('Cleared user_accounts table for testing');
     }
 
     // Get all users ordered by user_code
@@ -206,10 +214,13 @@ export const initialAccountGeneration = async (req: AuthRequest, res: Response):
     await client.query('COMMIT');
 
     res.json({
-      message: 'Initial account generation completed successfully',
+      message: force_reset 
+        ? 'Initial account generation completed successfully (TEST MODE - user_accounts cleared)'
+        : 'Initial account generation completed successfully',
       total_accounts_created: totalAccountsCreated,
       accounts_by_user: accountsCreatedByUser,
-      users_processed: users.rows.length
+      users_processed: users.rows.length,
+      test_mode: !!force_reset
     });
   } catch (error) {
     await client.query('ROLLBACK');
