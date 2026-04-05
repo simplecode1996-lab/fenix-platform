@@ -27,6 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { label: t('payments'), path: '/payments', icon: DollarSign },
     { label: t('fenixWallets'), path: '/wallets', icon: Wallet },
     { label: t('generateRights'), path: '/generate-rights', icon: TrendingUp },
+    { label: t('initialGeneration'), path: '/initial-generation', icon: TrendingUp },
   ];
 
   const userMenu = [

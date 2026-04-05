@@ -11,6 +11,7 @@ import Payments from './pages/Payments';
 import RequestPayment from './pages/RequestPayment';
 import Wallets from './pages/Wallets';
 import GenerateRights from './pages/GenerateRights';
+import InitialGeneration from './pages/InitialGeneration';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
       <Route path="/accounts" element={<AdminRoute><Accounts /></AdminRoute>} />
       <Route path="/payments" element={<AdminRoute><Payments /></AdminRoute>} />
       <Route path="/generate-rights" element={<AdminRoute><GenerateRights /></AdminRoute>} />
+      <Route path="/initial-generation" element={<AdminRoute><InitialGeneration /></AdminRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );

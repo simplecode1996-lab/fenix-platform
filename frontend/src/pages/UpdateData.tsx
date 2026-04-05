@@ -37,18 +37,26 @@ export default function UpdateData() {
     }
   }, []);
 
-  // Live search filter similar to User Accounts page
+  // Show all users initially, then filter as user types
   useEffect(() => {
-    if (!isAdmin || !searchTerm) {
+    if (!isAdmin) {
       setFilteredUsers([]);
       return;
     }
     
+    if (!searchTerm) {
+      // Show all users when no search term
+      setFilteredUsers(users);
+      return;
+    }
+    
+    // Filter as user types
     const filtered = users.filter(u =>
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(u.user_code).includes(searchTerm)
+      String(u.user_code).includes(searchTerm) ||
+      `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredUsers(filtered.slice(0, 10)); // Limit to 10 results
+    setFilteredUsers(filtered);
   }, [searchTerm, users, isAdmin]);
 
   const selectUser = (u: any) => {
@@ -319,7 +327,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '0 0 8px 8px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     zIndex: 10,
-    maxHeight: '300px',
+    maxHeight: '400px',
     overflowY: 'auto'
   },
   dropdownItem: {

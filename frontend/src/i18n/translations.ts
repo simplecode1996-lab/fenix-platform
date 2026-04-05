@@ -140,6 +140,7 @@ export const translations = {
     // Generate Rights
     generateRightsTitle: 'Generate Collection Rights',
     generateRightsSubtitle: 'Process Level 3 completed accounts to generate payout rights for users',
+    initialGeneration: 'Initial Generation',
     totalAccounts: 'Total Accounts',
     level3Pending: 'Level 3 Pending',
     level3Processed: 'Level 3 Processed',
@@ -327,6 +328,7 @@ export const translations = {
     // Generate Rights
     generateRightsTitle: 'Generar Derechos de Cobro',
     generateRightsSubtitle: 'Procesar cuentas de Nivel 3 completadas para generar derechos de pago a usuarios',
+    initialGeneration: 'Generación Inicial',
     totalAccounts: 'Total de Cuentas',
     level3Pending: 'Nivel 3 Pendientes',
     level3Processed: 'Nivel 3 Procesadas',
