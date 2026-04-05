@@ -43,8 +43,14 @@ export default function RequestPayment() {
       <h2 style={styles.title}>{t('requestPayment')}</h2>
 
       <div style={styles.card}>
-        <div style={styles.infoRow}><span style={styles.label}>{t('name')}:</span> {userData.first_name} {userData.last_name}</div>
-        <div style={styles.infoRow}><span style={styles.label}>{t('wallet')}:</span> {userData.wallet || <span style={{ color: '#ef4444' }}>Not set</span>}</div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>{t('name')}:</span>
+          <span style={styles.infoValue}>{userData.first_name} {userData.last_name}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>{t('wallet')}:</span>
+          <span style={styles.infoValue}>{userData.wallet || <span style={{ color: '#ef4444' }}>Not set</span>}</span>
+        </div>
         <div style={styles.infoRow}>
           <span style={styles.label}>{t('availableBalance')}:</span>
           <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '1.2rem' }}>
@@ -94,8 +100,9 @@ export default function RequestPayment() {
 const styles: Record<string, React.CSSProperties> = {
   title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.75rem' },
   card: { background: '#ffffff', padding: '2rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' },
-  infoRow: { color: '#475569', fontSize: '0.95rem', marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', padding: '0.75rem', background: '#f8fafc', borderRadius: '10px' },
-  label: { color: '#64748b', minWidth: '150px', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  infoRow: { color: '#475569', fontSize: '1rem', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '10px', minHeight: '80px' },
+  label: { color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  infoValue: { color: '#0f172a', fontSize: '1.1rem', fontWeight: 600, wordBreak: 'break-all', lineHeight: '1.5' },
   input: { width: '100%', padding: '1rem 1.25rem', borderRadius: '12px', border: '2px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '1.25rem', fontWeight: 700, boxSizing: 'border-box', transition: 'all 0.2s' },
   breakdown: { background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #fbbf24' },
   breakdownRow: { display: 'flex', justifyContent: 'space-between', color: '#92400e', fontSize: '1rem', marginBottom: '0.75rem', fontWeight: 600 },

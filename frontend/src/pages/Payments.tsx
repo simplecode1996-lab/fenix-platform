@@ -5,14 +5,36 @@ import api from '../services/api';
 export default function Payments() {
   const { t } = useLanguage();
   const [payments, setPayments] = useState<any[]>([]);
-  const [filterCode, setFilterCode] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const fetchPayments = async (code?: string) => {
+  // Load all users
+  useEffect(() => {
+    api.get('/users').then(res => setAllUsers(res.data)).catch(console.error);
+  }, []);
+
+  // Live search filter
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredUsers([]);
+      return;
+    }
+    
+    const filtered = allUsers.filter(u =>
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(u.user_code).includes(searchTerm)
+    );
+    setFilteredUsers(filtered.slice(0, 10));
+  }, [searchTerm, allUsers]);
+
+  const fetchPayments = async (userCode?: number) => {
     setLoading(true);
     try {
-      const params = code ? `?user_code=${code}` : '';
+      const params = userCode ? `?user_code=${userCode}` : '';
       const res = await api.get(`/payments${params}`);
       setPayments(res.data);
     } finally {
@@ -22,12 +44,25 @@ export default function Payments() {
 
   useEffect(() => { fetchPayments(); }, []);
 
+  const selectUser = (user: any) => {
+    setSelectedUser(user);
+    setFilteredUsers([]);
+    setSearchTerm('');
+    fetchPayments(user.user_code);
+  };
+
+  const clearFilter = () => {
+    setSelectedUser(null);
+    setSearchTerm('');
+    fetchPayments();
+  };
+
   const handleComplete = async (payment_id: number) => {
     if (!window.confirm(t('confirmAction'))) return;
     try {
       await api.put(`/payments/${payment_id}/complete`, { payment_date: new Date().toISOString() });
       setMessage(t('successMessage'));
-      fetchPayments(filterCode || undefined);
+      fetchPayments(selectedUser?.user_code);
     } catch (err: any) {
       setMessage(err.response?.data?.error || t('errorOccurred'));
     }
@@ -37,11 +72,44 @@ export default function Payments() {
     <div>
       <h2 style={styles.title}>{t('payments')}</h2>
 
-      <div style={styles.filterRow}>
-        <input placeholder="Filter by user code..." value={filterCode}
-          onChange={e => setFilterCode(e.target.value)} style={styles.input} />
-        <button onClick={() => fetchPayments(filterCode || undefined)} style={styles.btn}>{t('search')}</button>
-        <button onClick={() => { setFilterCode(''); fetchPayments(); }} style={styles.btnSecondary}>{t('clear')}</button>
+      {/* Search and Filter */}
+      <div style={styles.filterCard}>
+        <div style={styles.searchContainer}>
+          <input 
+            placeholder={`${t('search')} ${t('email')} ${t('or')} ${t('userCode')}...`}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)} 
+            style={styles.searchInput} 
+          />
+          {filteredUsers.length > 0 && (
+            <div style={styles.dropdown}>
+              {filteredUsers.map(user => (
+                <div
+                  key={user.user_code}
+                  onClick={() => selectUser(user)}
+                  style={styles.dropdownItem}
+                >
+                  <div style={styles.dropdownUser}>
+                    <span style={styles.dropdownName}>{user.first_name} {user.last_name}</span>
+                    <span style={styles.dropdownEmail}>{user.email}</span>
+                    <span style={styles.dropdownCode}>#{user.user_code}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {selectedUser && (
+          <div style={styles.selectedUser}>
+            <span style={styles.selectedUserText}>
+              {t('showing')} {selectedUser.first_name} {selectedUser.last_name} (#{selectedUser.user_code})
+            </span>
+            <button onClick={clearFilter} style={styles.clearBtn}>
+              {t('showAll')}
+            </button>
+          </div>
+        )}
       </div>
 
       {message && <p style={{ color: '#22c55e', marginBottom: '1rem' }}>{message}</p>}
@@ -96,10 +164,83 @@ export default function Payments() {
 
 const styles: Record<string, React.CSSProperties> = {
   title: { color: '#f59e0b', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.75rem' },
-  filterRow: { display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center', background: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' },
-  input: { flex: 1, padding: '0.875rem 1.25rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.9rem', transition: 'all 0.2s' },
-  btn: { padding: '0.875rem 1.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap' },
-  btnSecondary: { padding: '0.875rem 1.5rem', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap' },
+  filterCard: { background: '#ffffff', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' },
+  searchContainer: { position: 'relative', marginBottom: '1rem' },
+  searchInput: { 
+    width: '100%', 
+    maxWidth: '400px',
+    padding: '0.875rem 1.25rem', 
+    borderRadius: '10px', 
+    border: '2px solid #e2e8f0', 
+    background: '#f8fafc', 
+    color: '#0f172a', 
+    fontSize: '0.9rem',
+    transition: 'all 0.2s'
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    maxWidth: '400px',
+    background: '#ffffff',
+    border: '2px solid #e2e8f0',
+    borderTop: 'none',
+    borderRadius: '0 0 10px 10px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    zIndex: 10,
+    maxHeight: '300px',
+    overflowY: 'auto'
+  },
+  dropdownItem: {
+    padding: '0.75rem 1rem',
+    cursor: 'pointer',
+    borderBottom: '1px solid #f1f5f9',
+    transition: 'background-color 0.2s ease'
+  },
+  dropdownUser: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  dropdownName: {
+    fontWeight: 600,
+    color: '#0f172a',
+    fontSize: '0.9rem'
+  },
+  dropdownEmail: {
+    color: '#64748b',
+    fontSize: '0.8rem'
+  },
+  dropdownCode: {
+    color: '#f59e0b',
+    fontSize: '0.75rem',
+    fontWeight: 600
+  },
+  selectedUser: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: '0.75rem 1rem',
+    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.08) 100%)',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+    borderRadius: '8px'
+  },
+  selectedUserText: {
+    color: '#d97706',
+    fontSize: '0.9rem',
+    fontWeight: 600
+  },
+  clearBtn: {
+    padding: '0.5rem 1rem',
+    background: '#ffffff',
+    color: '#f59e0b',
+    border: '1px solid #f59e0b',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+    fontWeight: 600
+  },
   tableWrapper: { background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' },
   table: { width: '100%', borderCollapse: 'collapse' },
   thead: { background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' },

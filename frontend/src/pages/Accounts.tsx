@@ -12,6 +12,7 @@ export default function Accounts() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastCreatedAccount, setLastCreatedAccount] = useState<any>(null);
 
   // Load all users on mount
   useEffect(() => {
@@ -46,6 +47,8 @@ export default function Accounts() {
     setEmail('');
     setUserCode('');
     setError('');
+    setMessage('');
+    setLastCreatedAccount(null); // Reset when selecting a new user
   };
 
   const handleCreate = async (e: FormEvent) => {
@@ -55,13 +58,17 @@ export default function Accounts() {
     setLoading(true); setMessage(''); setError('');
     try {
       const res = await api.post('/accounts', { user_code: foundUser.user_code });
-      setMessage(`${t('accountCreated')} #${res.data.account.account_number}`);
+      const createdAccount = res.data.account;
       
-      // Clear all form data to allow new user selection
-      setFoundUser(null);
-      setEmail('');
-      setUserCode('');
-      setFilteredUsers([]);
+      setMessage(`${t('accountCreated')} #${createdAccount.account_number}`);
+      setLastCreatedAccount(createdAccount);
+      
+      // Refresh user data to show updated account count
+      const updated = await api.get(`/users/${foundUser.user_code}`);
+      setFoundUser(updated.data);
+      
+      // DON'T clear the user - keep showing their info
+      // This prevents accidental duplicate account creation
     } catch (err: any) {
       setError(err.response?.data?.error || t('errorOccurred'));
     } finally {
@@ -177,19 +184,73 @@ export default function Accounts() {
       </div>
 
       {foundUser && (
-        <form onSubmit={handleCreate} style={styles.card}>
+        <div style={styles.card}>
           <h3 style={styles.sectionTitle}>{t('createAccountTitle')}</h3>
-          <div style={styles.detailsGrid}>
-            <div><span style={styles.infoLabel}>{t('paidAmount')}:</span> <span style={{ color: '#f59e0b' }}>45 USDC</span></div>
-            <div><span style={styles.infoLabel}>{t('investmentAmount')}:</span> <span style={{ color: '#f59e0b' }}>25 USDC</span></div>
-            <div><span style={styles.infoLabel}>{t('level1Date')}:</span> <span style={{ color: '#22c55e' }}>{t('today')}</span></div>
-          </div>
-          {message && <p style={{ color: '#22c55e', marginTop: '1rem' }}>{message}</p>}
-          {error && <p style={{ color: '#ef4444', marginTop: '1rem' }}>{error}</p>}
-          <button type="submit" style={styles.btn} disabled={loading}>
-            {loading ? t('loading') : t('create')}
-          </button>
-        </form>
+          
+          {/* Show created account details if account was just created */}
+          {lastCreatedAccount ? (
+            <div style={styles.createdAccountInfo}>
+              <div style={styles.successBanner}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <div>
+                  <div style={styles.successTitle}>{t('accountCreated')}</div>
+                  <div style={styles.successSubtitle}>
+                    {t('accountNumber')}: <strong>#{lastCreatedAccount.account_number}</strong>
+                  </div>
+                </div>
+              </div>
+              
+              <div style={styles.accountDetails}>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('user')}:</span>
+                  <span style={styles.detailValue}>{foundUser.first_name} {foundUser.last_name}</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('userCode')}:</span>
+                  <span style={styles.detailValue}>#{foundUser.user_code}</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('registeredAccounts')}:</span>
+                  <span style={styles.detailValue}>
+                    {foundUser.registered_accounts_count} / {foundUser.allowed_accounts_count}
+                  </span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('paidAmount')}:</span>
+                  <span style={styles.detailValue}>45 USDC</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('investmentAmount')}:</span>
+                  <span style={styles.detailValue}>25 USDC</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{t('level1Date')}:</span>
+                  <span style={styles.detailValue}>{t('today')}</span>
+                </div>
+              </div>
+              
+              <p style={styles.infoText}>
+                {t('searchNewUserToCreate')}
+              </p>
+            </div>
+          ) : (
+            /* Show create form only if no account was just created */
+            <form onSubmit={handleCreate}>
+              <div style={styles.detailsGrid}>
+                <div><span style={styles.infoLabel}>{t('paidAmount')}:</span> <span style={{ color: '#f59e0b' }}>45 USDC</span></div>
+                <div><span style={styles.infoLabel}>{t('investmentAmount')}:</span> <span style={{ color: '#f59e0b' }}>25 USDC</span></div>
+                <div><span style={styles.infoLabel}>{t('level1Date')}:</span> <span style={{ color: '#22c55e' }}>{t('today')}</span></div>
+              </div>
+              {error && <p style={{ color: '#ef4444', marginTop: '1rem' }}>{error}</p>}
+              <button type="submit" style={styles.btn} disabled={loading}>
+                {loading ? t('loading') : t('create')}
+              </button>
+            </form>
+          )}
+        </div>
       )}
 
       {!foundUser && error && <p style={{ color: '#ef4444', marginTop: '1rem' }}>{error}</p>}
@@ -230,3 +291,18 @@ const styles: Record<string, React.CSSProperties> = {
   btn: { padding: '0.875rem 1.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#ffffff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)', transition: 'all 0.2s' },
   detailsGrid: { display: 'flex', gap: '2rem', flexWrap: 'wrap', color: '#475569', fontSize: '0.9rem', marginBottom: '1rem' }
 };
+
+// Add new styles for created account display
+const additionalStyles = {
+  createdAccountInfo: { padding: '1.5rem' },
+  successBanner: { display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%)', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#059669' },
+  successTitle: { fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.25rem' },
+  successSubtitle: { fontSize: '0.9rem', color: '#10b981' },
+  accountDetails: { background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #e2e8f0' },
+  detailRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #e2e8f0' },
+  detailLabel: { color: '#64748b', fontSize: '0.9rem', fontWeight: 500 },
+  detailValue: { color: '#0f172a', fontSize: '0.9rem', fontWeight: 600 },
+  infoText: { color: '#64748b', fontSize: '0.9rem', textAlign: 'center', fontStyle: 'italic', margin: 0 }
+};
+
+Object.assign(styles, additionalStyles);

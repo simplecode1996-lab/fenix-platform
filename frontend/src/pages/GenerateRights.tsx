@@ -73,6 +73,10 @@ export default function GenerateRights() {
             <div style={{ ...styles.statValue, color: '#22c55e' }}>{stats.accounts.processed_level_3}</div>
           </div>
           <div style={styles.statCard}>
+            <div style={styles.statLabel}>{t('completedAccounts')}</div>
+            <div style={{ ...styles.statValue, color: '#3b82f6' }}>{stats.accounts.completed_accounts || 0}</div>
+          </div>
+          <div style={styles.statCard}>
             <div style={styles.statLabel}>{t('totalPendingBalance')}</div>
             <div style={{ ...styles.statValue, color: '#22c55e' }}>
               {parseFloat(stats.users.total_pending || '0').toFixed(2)} USDC

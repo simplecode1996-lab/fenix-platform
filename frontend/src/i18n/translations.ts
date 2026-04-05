@@ -77,6 +77,9 @@ export const translations = {
     registeredAccounts: 'Registered Accounts',
     admin: 'Admin',
     user: 'User',
+    usersList: 'Users List',
+    noUsers: 'No users yet',
+    accounts: 'accounts',
     
     // Create User
     createUser: 'Create User',
@@ -108,6 +111,7 @@ export const translations = {
     searchUser: 'Search User',
     userNotFound: 'User not found',
     accountCreated: 'Account created successfully',
+    searchNewUserToCreate: 'To create another account, search for a new user above',
     paidAmount: 'Paid Amount',
     investmentAmount: 'Investment Amount',
     level1Date: 'Level 1 Date',
@@ -139,6 +143,7 @@ export const translations = {
     totalAccounts: 'Total Accounts',
     level3Pending: 'Level 3 Pending',
     level3Processed: 'Level 3 Processed',
+    completedAccounts: 'Completed Accounts',
     totalPendingBalance: 'Total Pending Balance',
     generatePayments: 'Generate Payments',
     numberOfPayments: 'Number of Payments to Generate',
@@ -259,6 +264,9 @@ export const translations = {
     registeredAccounts: 'Cuentas Registradas',
     admin: 'Administrador',
     user: 'Usuario',
+    usersList: 'Lista de Usuarios',
+    noUsers: 'No hay usuarios aún',
+    accounts: 'cuentas',
     
     // Create User
     createUser: 'Crear Usuario',
@@ -290,6 +298,7 @@ export const translations = {
     searchUser: 'Buscar Usuario',
     userNotFound: 'Usuario no encontrado',
     accountCreated: 'Cuenta creada exitosamente',
+    searchNewUserToCreate: 'Para crear otra cuenta, busca un nuevo usuario arriba',
     paidAmount: 'Importe Pagado',
     investmentAmount: 'Importe Inversión',
     level1Date: 'Fecha Nivel 1',
@@ -321,6 +330,7 @@ export const translations = {
     totalAccounts: 'Total de Cuentas',
     level3Pending: 'Nivel 3 Pendientes',
     level3Processed: 'Nivel 3 Procesadas',
+    completedAccounts: 'Cuentas Completadas',
     totalPendingBalance: 'Saldo Total Pendiente',
     generatePayments: 'Generar Pagos',
     numberOfPayments: 'Número de Pagos a Generar',

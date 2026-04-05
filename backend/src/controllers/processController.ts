@@ -230,7 +230,8 @@ export const getProcessStats = async (req: AuthRequest, res: Response): Promise<
         COUNT(CASE WHEN level_2_date IS NOT NULL THEN 1 END) as level_2_count,
         COUNT(CASE WHEN level_3_date IS NOT NULL THEN 1 END) as level_3_count,
         COUNT(CASE WHEN level_3_date IS NOT NULL AND level_3_processed = FALSE THEN 1 END) as pending_level_3,
-        COUNT(CASE WHEN level_3_date IS NOT NULL AND level_3_processed = TRUE THEN 1 END) as processed_level_3
+        COUNT(CASE WHEN level_3_date IS NOT NULL AND level_3_processed = TRUE THEN 1 END) as processed_level_3,
+        COUNT(CASE WHEN account_number * 27 <= (SELECT COUNT(*) FROM user_accounts) THEN 1 END) as completed_accounts
       FROM user_accounts
     `);
 

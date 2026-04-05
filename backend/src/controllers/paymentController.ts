@@ -18,7 +18,7 @@ export const getPayments = async (req: AuthRequest, res: Response): Promise<void
         query += ` WHERE p.user_code = $1 ORDER BY p.request_date DESC`;
         params.push(user_code);
       } else {
-        query += ` WHERE p.payment_date IS NULL ORDER BY p.request_date DESC`;
+        query += ` ORDER BY p.request_date DESC`;
       }
 
       const result = await pool.query(query, params);
